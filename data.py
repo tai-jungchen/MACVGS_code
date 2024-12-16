@@ -8,7 +8,8 @@ import pandas as pd
 
 
 def main():
-    covid_pre()
+    pass
+    # covid_pre()
 
 
 def spam():

@@ -18,7 +18,6 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
-from tqdm import tqdm
 import xgboost as xgb
 from pyDecision.algorithm import bw_method
 from sklearn.metrics import confusion_matrix

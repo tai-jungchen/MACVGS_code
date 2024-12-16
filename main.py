@@ -6,6 +6,7 @@ and COVID dataset (COVID). Model type options include Logistic Regression (LR), 
 DT), K Nearest Neighbor (KNN), Support Vector Machine (SVM), eXtreme Gradient Boosting (XGB).
 """
 import pickle
+import pandas as pd
 import time
 import numpy as np
 from imblearn.metrics import specificity_score
