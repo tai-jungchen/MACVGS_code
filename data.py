@@ -7,13 +7,14 @@ import pickle
 import pandas as pd
 
 
-def main():
-    pass
-    # covid_pre()
-
-
 def spam():
     pass
+
+
+def hmeq():
+    file_name = "datasets/Raw_data/hmeq.csv"
+    df = pd.read_csv(file_name)
+    print()
 
 
 def covid_pre():
@@ -36,4 +37,4 @@ def covid_pre():
 
 
 if __name__ == '__main__':
-    main()
+    hmeq()

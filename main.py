@@ -45,18 +45,17 @@ def main(dataset: str, model: object, hyps: dict, thres: np.ndarray, tuning: str
 
     # dataset
     if dataset == "COVID":
-        data_x = 'datasets/pickles/covid_X.pkl'
-        data_y = 'datasets/pickles/covid_Y.pkl'
+        # data_x = 'datasets/pickles/covid_X.pkl'
+        # data_y = 'datasets/pickles/covid_Y.pkl'
+        X = pd.read_pickle('datasets/pickles/covid_X.pkl').to_numpy()
+        y = pd.read_pickle('datasets/pickles/covid_Y.pkl').to_numpy()
     elif dataset == "HMEQ":
-        data_x = 'datasets/pickles/hmeq_X.pickle'
-        data_y = 'datasets/pickles/hmeq_Y.pickle'
+        # data_x = 'datasets/pickles/hmeq_X.pickle'
+        # data_y = 'datasets/pickles/hmeq_Y.pickle'
+        X = pd.read_pickle('datasets/pickles/hmeq_X.pickle')
+        y = pd.read_pickle('datasets/pickles/hmeq_Y.pickle')
     else:
         raise Exception("Invalid dataset! Please use either COVID or HMEQ as input dataset.")
-
-    with open(data_x, 'rb') as f:
-        X = pickle.load(f)
-    with open(data_y, 'rb') as f:
-        y = pickle.load(f)
 
     # n replication
     record_metrics = ['acc', 'kappa', 'bacc', 'precision', 'recall', 'specificity', 'f1', 'auc', 'apr', 'time']
@@ -133,8 +132,8 @@ if __name__ == '__main__':
     # TUNE = "GSCV"
     # TUNE = "GS"
 
-    data = "COVID"
-    # data = "HMEQ"
+    # data = "COVID"
+    data = "HMEQ"
 
     model_type = "LR"
     # model_type = "SVM"
@@ -149,7 +148,7 @@ if __name__ == '__main__':
     metric = "f1"
 
     if model_type == "LR":
-        input_model = LogisticRegression(max_iter=1000)
+        input_model = LogisticRegression(max_iter=5000)
         hyper_param = {"C": [1e1, 1, 1e-1], "class_weight": ['balanced', None]}
     elif model_type == "SVM":
         input_model = SVC(probability=True)
@@ -172,7 +171,7 @@ if __name__ == '__main__':
         raise Exception("Unsupported model type.")
 
     thresholds = np.arange(0, 1.05, 0.05)
-    final_res = main(data, input_model, hyper_param, thresholds, TUNE, metric, metric_lst, mic, lic, n_rep=10)
+    final_res = main(data, input_model, hyper_param, thresholds, TUNE, metric, metric_lst, mic, lic, n_rep=2)
 
     # df = pd.DataFrame(final_res)
     # filename = f"results/{data}_{model_type}_{TUNE}.csv"
