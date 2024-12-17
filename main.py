@@ -5,7 +5,6 @@ Utilize MADM technique to perform parameter and threshold tuning. Dataset option
 and COVID dataset (COVID). Model type options include Logistic Regression (LR), Random Forest (RF), Decision Tree (
 DT), K Nearest Neighbor (KNN), Support Vector Machine (SVM), eXtreme Gradient Boosting (XGB).
 """
-import pickle
 import pandas as pd
 import time
 import numpy as np
@@ -40,18 +39,11 @@ def main(dataset: str, model: object, hyps: dict, thres: np.ndarray, tuning: str
 
     :return summary result of all the replication including mean and s.e.
     """
-    # Preservation names
-    filename = f"{tuning}_{dataset}_{model}"
-
     # dataset
     if dataset == "COVID":
-        # data_x = 'datasets/pickles/covid_X.pkl'
-        # data_y = 'datasets/pickles/covid_Y.pkl'
         X = pd.read_pickle('datasets/pickles/covid_X.pkl').to_numpy()
         y = pd.read_pickle('datasets/pickles/covid_Y.pkl').to_numpy()
     elif dataset == "HMEQ":
-        # data_x = 'datasets/pickles/hmeq_X.pickle'
-        # data_y = 'datasets/pickles/hmeq_Y.pickle'
         X = pd.read_pickle('datasets/pickles/hmeq_X.pickle')
         y = pd.read_pickle('datasets/pickles/hmeq_Y.pickle')
     else:
@@ -68,8 +60,6 @@ def main(dataset: str, model: object, hyps: dict, thres: np.ndarray, tuning: str
             tuner = MADMCVTuner(model, metric_lst, mic, lic, hyps, thres, cv=10)
         elif tuning == "MADM":
             tuner = MADMTuner(model, metric_lst, mic, lic, hyps, thres)
-        # elif tuning == "No Tune":
-        #     tuner = None
         elif tuning == "GS":
             tuner = GridSearchTuner(model, hyps, thres, metric)
         elif tuning == "GSCV":
@@ -97,13 +87,14 @@ def main(dataset: str, model: object, hyps: dict, thres: np.ndarray, tuning: str
 
     # summarize results in all replication runs
     sum_res = {}
+    sum_res['tune'] = [tuning]
+    sum_res['model'] = [model]
     for key, val in over_all_res.items():
         mean_key = f"{key}_mean"
         se_key = f"{key}_se"
         val = np.array(val)
         sum_res[mean_key] = [round(float(np.mean(val)), 4)]
         sum_res[se_key] = [round(np.std(val, ddof=1) / np.sqrt(n_rep), 4)]
-
     return sum_res
 
 
@@ -118,62 +109,57 @@ def predict(model: object, X: np.ndarray, thre: float) -> tuple:
     :return: the predicted outcome based on the given decision threshold and the predicted probability
     """
     if (isinstance(model, LogisticRegression) or isinstance(model, SVC) or isinstance(model, DecisionTreeClassifier)
-            or isinstance(model, KNeighborsClassifier)) or isinstance(model, RandomForestClassifier) or isinstance(
-        model, xgb.XGBClassifier):
+            or isinstance(model, KNeighborsClassifier)) or isinstance(model, RandomForestClassifier) or isinstance(model, xgb.XGBClassifier):
         y_prob = model.predict_proba(X)[:, 1]
     else:
-        raise Exception("Invalid model type! Please use one of the options in [LR, RF, ...] as input model type.")
+        raise Exception("Invalid model type!")
     return (y_prob >= thre).astype(int), y_prob
 
 
 if __name__ == '__main__':
-    TUNE = "MACVGS"
-    # TUNE = "MADM"
-    # TUNE = "GSCV"
-    # TUNE = "GS"
-
     # data = "COVID"
     data = "HMEQ"
 
-    model_type = "LR"
-    # model_type = "SVM"
-    # model_type = "DT"
-    # model_type = "KNN"
-    # model_type = "RF"
-    # model_type = "XGB"
-
+    scenario = "case1"
     metric_lst = ["precision", "recall", "specificity", "npv"]
-    mic = np.array([3, 1, 8, 5])
-    lic = np.array([6, 8, 1, 4])
+    mic = np.array([3, 9, 1, 4])
+    lic = np.array([5, 1, 9, 5])
     metric = "f1"
 
-    if model_type == "LR":
-        input_model = LogisticRegression(max_iter=5000)
-        hyper_param = {"C": [1e1, 1, 1e-1], "class_weight": ['balanced', None]}
-    elif model_type == "SVM":
-        input_model = SVC(probability=True)
-        hyper_param = {'C': [0.1, 1, 10], 'gamma': [0.01, 0.1, 1], 'kernel': ['linear', 'rbf'], "class_weight": [
-            'balanced', None]}
-    elif model_type == "DT":
-        input_model = DecisionTreeClassifier()
-        hyper_param = {'max_depth': [10, 50, 100], "class_weight": ['balanced', None]}
-    elif model_type == "KNN":
-        input_model = KNeighborsClassifier()
-        hyper_param = {'n_neighbors': [3, 5, 7, 9], 'weights': ['uniform', 'distance'], 'metric': ['euclidean', 'manhattan']}
-    elif model_type == "RF":
-        input_model = RandomForestClassifier()
-        hyper_param = {'n_estimators': [100, 200, 300], 'max_depth': [None, 5, 10, 20], 'class_weight': [None,
-                                                                                                         'balanced']}
-    elif model_type == "XGB":
-        input_model = xgb.XGBClassifier()
-        hyper_param = {'n_estimators': [50, 100, 200], 'max_depth': [3, 5, 7], 'learning_rate': [0.01, 0.1, 0.3]}
-    else:
-        raise Exception("Unsupported model type.")
-
+    tunes = ["MACVGS", "GSCV"]  # tunes = ["MACVGS", "GSCV", "MADM", "GS"]
+    model_types = ["LR", "DT", "KNN", "RF", "XGB"]
     thresholds = np.arange(0, 1.05, 0.05)
-    final_res = main(data, input_model, hyper_param, thresholds, TUNE, metric, metric_lst, mic, lic, n_rep=2)
 
-    # df = pd.DataFrame(final_res)
-    # filename = f"results/{data}_{model_type}_{TUNE}.csv"
-    # df.to_csv(filename, index = False)
+    # iterate through all configurations
+    df = pd.DataFrame()
+    for tune in tunes:
+        for model_type in model_types:
+            if model_type == "LR":
+                input_model = LogisticRegression(penalty='l1', solver='liblinear', max_iter=100)
+                hyper_param = {"C": [1000, 100, 10, 1, 0.1, 0.01, 0.001], "class_weight": ['balanced', None]}
+            elif model_type == "SVM":
+                input_model = SVC(probability=True)
+                hyper_param = {'C': [0.1, 1, 10], 'kernel': ['linear', 'rbf'], "class_weight": ['balanced', None]}
+            elif model_type == "DT":
+                input_model = DecisionTreeClassifier()
+                hyper_param = {'max_depth': [10, 50, 100], "class_weight": ['balanced', None],
+                               "criterion": ["gini", "entropy", "log_loss"]}
+            elif model_type == "KNN":
+                input_model = KNeighborsClassifier()
+                hyper_param = {'n_neighbors': [3, 5, 7, 9], 'weights': ['uniform', 'distance']}
+            elif model_type == "RF":
+                input_model = RandomForestClassifier()
+                hyper_param = {'n_estimators': [100, 200, 300], 'class_weight': [None, 'balanced']}
+            elif model_type == "XGB":
+                input_model = xgb.XGBClassifier()
+                hyper_param = {'n_estimators': [50, 100, 200], 'learning_rate': [0.01, 0.1, 0.3]}
+            else:
+                raise Exception("Unsupported model type.")
+
+            final_res = main(data, input_model, hyper_param, thresholds, tune, metric, metric_lst, mic, lic, n_rep=10)
+            sub_df = pd.DataFrame(final_res)
+            df = pd.concat([df, sub_df], axis=0)
+
+    filename = f"{data}_{scenario}.csv"
+    df.to_csv(filename, index=False)
 
