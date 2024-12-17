@@ -117,15 +117,26 @@ def predict(model: object, X: np.ndarray, thre: float) -> tuple:
 
 
 if __name__ == '__main__':
-    # data = "COVID"
-    data = "HMEQ"
+    '''HMEQ case 1'''
+    # data = "HMEQ"
+    # scenario = "case1"
+    # mic = np.array([3, 9, 1, 4])
+    # lic = np.array([5, 1, 9, 5])
 
+    '''COVID case 1 - Infection rate'''
+    data = "COVID"
     scenario = "case1"
-    metric_lst = ["precision", "recall", "specificity", "npv"]
-    mic = np.array([3, 9, 1, 4])
-    lic = np.array([5, 1, 9, 5])
-    metric = "f1"
+    mic = np.array([3, 1, 8, 5])
+    lic = np.array([6, 8, 1, 4])
 
+    '''COVID case 2 - Budget'''
+    # data = "COVID"
+    # scenario = "case2"
+    # mic = np.array([3, 8, 1, 4])
+    # lic = np.array([6, 1, 8, 5])
+
+    metric_lst = ["precision", "recall", "specificity", "npv"]
+    metric = "f1"
     tunes = ["MACVGS", "GSCV"]  # tunes = ["MACVGS", "GSCV", "MADM", "GS"]
     model_types = ["LR", "DT", "KNN", "RF", "XGB"]
     thresholds = np.arange(0, 1.05, 0.05)
