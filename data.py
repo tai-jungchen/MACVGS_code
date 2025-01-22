@@ -7,6 +7,11 @@ import pickle
 import pandas as pd
 
 
+def nij():
+    file_name = "datasets/Raw_data/Global_MI_multi_cat_2.pkl"
+    df = pd.read_pickle(file_name)
+    print()
+
 def spam():
     pass
 
@@ -37,4 +42,5 @@ def covid_pre():
 
 
 if __name__ == '__main__':
-    hmeq()
+    nij()
+    # hmeq()
