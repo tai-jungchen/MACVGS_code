@@ -37,7 +37,7 @@ def main(dataset: str, model: object, hyps: dict, thres: np.ndarray, tuning: str
     :param lic: Linear Independence Condition.
     :param n_rep:  number of replication. Default set to 30.
 
-    :return summary result of all the replication including mean and s.e.
+    :return: summary result of all the replication including mean and s.e.
     """
     # dataset
     if dataset == "COVID":
