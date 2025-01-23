@@ -1,5 +1,5 @@
 """
-Name: Alex (Tai-Jung) Chen
+Author: Alex (Tai-Jung) Chen
 
 The python module that carries out multiple parameter tuning methods such as MADM, MADMCV, Grid search, Grid search CV,
 and no tuning.

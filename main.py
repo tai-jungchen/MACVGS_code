@@ -22,7 +22,7 @@ import xgboost as xgb
 
 
 def main(dataset: str, model: object, hyps: dict, thres: np.ndarray, tuning: str, metric: str, metric_lst: list,
-         mic: np.ndarray, lic: np.ndarray, n_rep: int = 30) -> dict:
+         mic: np.ndarray, lic: np.ndarray, n_rep: int = 2) -> dict:
     """
     Execute MADM tuning on given dataset, model type, mic, and lic.
 
@@ -46,6 +46,10 @@ def main(dataset: str, model: object, hyps: dict, thres: np.ndarray, tuning: str
     elif dataset == "HMEQ":
         X = pd.read_pickle('datasets/pickles/hmeq_X.pickle')
         y = pd.read_pickle('datasets/pickles/hmeq_Y.pickle')
+    elif dataset == "NIJ":
+        data =pd.read_pickle("datasets/Raw_data/Global_MI_multi_cat_2.pkl")
+        X = data.iloc[:, 1:-1].to_numpy()
+        y = data.iloc[:, -1].to_numpy()
     else:
         raise Exception("Invalid dataset! Please use either COVID or HMEQ as input dataset.")
 
@@ -130,10 +134,16 @@ if __name__ == '__main__':
     # lic = np.array([6, 8, 1, 4])
 
     '''COVID case 2 - Budget'''
-    data = "COVID"
-    scenario = "case2"
-    mic = np.array([3, 8, 1, 4])
-    lic = np.array([6, 1, 8, 5])
+    # data = "COVID"
+    # scenario = "case2"
+    # mic = np.array([3, 8, 1, 4])
+    # lic = np.array([6, 1, 8, 5])
+
+    '''NIJ case 1'''
+    data = "NIJ"
+    scenario = "case1"
+    mic = np.array([8, 3, 6, 1])
+    lic = np.array([1, 5, 4, 8])
 
     metric_lst = ["precision", "recall", "specificity", "npv"]
     metric = "f1"
