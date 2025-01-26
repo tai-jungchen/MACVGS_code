@@ -27,7 +27,7 @@ from sklearn.base import clone
 
 class BaseClass:
     @staticmethod
-    def npv_score(truth: np.ndarray, pred: np.ndarray) -> np.ndarray:
+    def npv_score(truth: np.ndarray, pred: np.ndarray) -> float:
         """
         Helper function for calculating the negative predictive value.
 
@@ -41,7 +41,8 @@ class BaseClass:
         if math.isnan(npv):
             warnings.warn("Negative Predicted Value is ill-defined and being set to 0.0 due to no predicted "
                           "negative samples.", category=UserWarning)
-        return npv if npv else 0.0
+            return 0.0
+        return npv
 
 
 class MADMCVTuner(BaseClass):
