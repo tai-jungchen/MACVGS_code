@@ -41,7 +41,7 @@ class BaseClass:
         if math.isnan(npv):
             warnings.warn("Negative Predicted Value is ill-defined and being set to 0.0 due to no predicted "
                           "negative samples.", category=UserWarning)
-        return npv if not npv else 0.0
+        return npv if npv else 0.0
 
 
 class MADMCVTuner(BaseClass):
