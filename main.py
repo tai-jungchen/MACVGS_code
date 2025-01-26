@@ -10,10 +10,10 @@ import pandas as pd
 import time
 from imblearn.metrics import specificity_score
 from sklearn.metrics import (accuracy_score, cohen_kappa_score, balanced_accuracy_score, roc_auc_score,
-                             average_precision_score, f1_score, precision_score, recall_score)
+                             average_precision_score, f1_score, precision_score, recall_score, confusion_matrix)
 from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
-from param_tuner import MADMCVTuner, MADMTuner, GridSearchCVTuner, GridSearchTuner
+from param_tuner import MADMCVTuner, MADMTuner, GridSearchCVTuner, GridSearchTuner, BaseClass
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
@@ -35,7 +35,7 @@ def main(dataset: str, model: object, hyps: dict, thres: np.ndarray, tuning: str
     :param metric_lst: list of metrics used to calculate the madm objective value
     :param mic: Monotonicity Intensity Coefficient.
     :param lic: Linear Independence Condition.
-    :param n_rep:  number of replication. Default set to 30.
+    :param n_rep:  number of replication. Default set to 2.
 
     :return: summary result of all the replication including mean and s.e.
     """
@@ -54,7 +54,7 @@ def main(dataset: str, model: object, hyps: dict, thres: np.ndarray, tuning: str
         raise Exception("Invalid dataset! Please use either COVID or HMEQ as input dataset.")
 
     # n replication
-    record_metrics = ['acc', 'kappa', 'bacc', 'precision', 'recall', 'specificity', 'f1', 'auc', 'apr', 'time']
+    record_metrics = ['acc', 'kappa', 'bacc', 'precision', 'recall', 'specificity', 'f1', 'npv', 'auc', 'apr', 'time']
     over_all_res = {key: [] for key in record_metrics}
     for i in range(n_rep):
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, stratify=y, random_state=i)
@@ -85,6 +85,7 @@ def main(dataset: str, model: object, hyps: dict, thres: np.ndarray, tuning: str
         over_all_res['recall'].append(round(recall_score(y_test, y_pred), 4))
         over_all_res['specificity'].append(round(specificity_score(y_test, y_pred), 4))
         over_all_res['f1'].append(round(f1_score(y_test, y_pred), 4))
+        over_all_res['npv'].append(round(BaseClass.npv_score(y_test, y_pred), 4))
         over_all_res['auc'].append(round(roc_auc_score(y_test, y_prob), 4))
         over_all_res['apr'].append(round(average_precision_score(y_test, y_prob), 4))
         over_all_res['time'].append(round(end_time - start_time, 4))
@@ -104,7 +105,7 @@ def main(dataset: str, model: object, hyps: dict, thres: np.ndarray, tuning: str
 
 def predict(model: object, X: np.ndarray, thre: float) -> tuple:
     """
-    Return the predction based on the given decision threshold
+    Return the prediction based on the given decision threshold
 
     :param model: model generating the prediction.
     :param X: the features used to predict.
@@ -126,27 +127,30 @@ if __name__ == '__main__':
     # scenario = "case1"
     # mic = np.array([3, 9, 1, 4])
     # lic = np.array([5, 1, 9, 5])
+    # metric = "specificity"
 
     '''COVID case 1 - Infection rate'''
     # data = "COVID"
     # scenario = "case1"
     # mic = np.array([3, 1, 8, 5])
     # lic = np.array([6, 8, 1, 4])
+    # metric = "recall"
 
     '''COVID case 2 - Budget'''
     # data = "COVID"
     # scenario = "case2"
     # mic = np.array([3, 8, 1, 4])
     # lic = np.array([6, 1, 8, 5])
+    # metric = "specificity"
 
     '''NIJ case 1'''
     data = "NIJ"
     scenario = "case1"
     mic = np.array([8, 3, 6, 1])
     lic = np.array([1, 5, 4, 8])
+    metric = "npv"
 
     metric_lst = ["precision", "recall", "specificity", "npv"]
-    metric = "f1"
     tunes = ["MACVGS", "GSCV"]  # tunes = ["MACVGS", "GSCV", "MADM", "GS"]
     model_types = ["LR", "DT", "KNN", "RF", "XGB"]
     thresholds = np.arange(0, 1.05, 0.05)
@@ -177,10 +181,10 @@ if __name__ == '__main__':
             else:
                 raise Exception("Unsupported model type.")
 
-            final_res = main(data, input_model, hyper_param, thresholds, tune, metric, metric_lst, mic, lic, n_rep=10)
+            final_res = main(data, input_model, hyper_param, thresholds, tune, metric, metric_lst, mic, lic, n_rep=2)
             sub_df = pd.DataFrame(final_res)
             df = pd.concat([df, sub_df], axis=0)
 
-    filename = f"{data}_{scenario}.csv"
+    filename = f"{data}_{scenario}_{metric}.csv"
     df.to_csv(filename, index=False)
 
