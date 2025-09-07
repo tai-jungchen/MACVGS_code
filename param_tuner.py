@@ -160,6 +160,14 @@ class MADMCVTuner(BaseClass):
         specs = [specificity_score(truth, row) for row in pred]
         npvs = [self.npv_score(truth, row) for row in pred]
 
+        tps, tns, fps, fns = [], [], [], []
+        for row in pred:
+            tn, fp, fn, tp = confusion_matrix(truth, row).ravel()
+            tps.append(tp)
+            tns.append(tn)
+            fps.append(fp)
+            fns.append(fn)
+
         # aggregate metrics for weighted sum
         metrics = []
         for met in self.metric_lst:
@@ -171,6 +179,14 @@ class MADMCVTuner(BaseClass):
                 metrics.append(specs)
             elif met == "npv":
                 metrics.append(npvs)
+            elif met == 'tp':
+                metrics.append(tps)
+            elif met == 'tn':
+                metrics.append(tns)
+            elif met == 'fp':
+                metrics.append(fps)
+            elif met == 'fn':
+                metrics.append(fns)
             else:
                 raise Exception("Invalid classification metric!")
 

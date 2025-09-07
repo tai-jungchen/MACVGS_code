@@ -150,7 +150,8 @@ if __name__ == '__main__':
     # lic = np.array([1, 5, 4, 8])
     # metric = "npv"
 
-    metric_lst = ["precision", "recall", "specificity", "npv"]
+    # metric_lst = ["precision", "recall", "specificity", "npv"]
+    metric_lst = ["tp", "tn", "fp", "fn"]
     tunes = ["MACVGS", "GSCV"]  # tunes = ["MACVGS", "GSCV", "MADM", "GS"]
     model_types = ["LR", "DT", "KNN", "RF", "XGB"]
     thresholds = np.arange(0, 1.05, 0.05)
